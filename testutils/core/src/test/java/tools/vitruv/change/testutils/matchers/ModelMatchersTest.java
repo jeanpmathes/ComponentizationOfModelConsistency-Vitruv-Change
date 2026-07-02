@@ -18,9 +18,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import tools.vitruv.change.testutils.metamodels.AllElementTypesCreators;
 
-public class ModelMatchersTest {
+/**
+ * Tests the factory methods exposed by {@link ModelMatchers}.
+ */
+class ModelMatchersTest {
   @Test
-  public void containsModelOfMatchesDeeplyEqualResource(final @TempDir Path testFolder)
+  void containsModelOfMatchesDeeplyEqualResource(final @TempDir Path testFolder)
       throws IOException {
     final Resource expected = this.resource(testFolder.resolve("expected.aet"));
     expected.getContents().add(root("root"));
@@ -33,7 +36,7 @@ public class ModelMatchersTest {
   }
 
   @Test
-  public void containsMatchesDeeplyEqualRoot(final @TempDir Path testFolder) throws IOException {
+  void containsMatchesDeeplyEqualRoot(final @TempDir Path testFolder) throws IOException {
     final Resource resource = this.resource(testFolder.resolve("model.aet"));
     resource.getContents().add(root("root"));
     resource.save(Map.of());
@@ -42,7 +45,7 @@ public class ModelMatchersTest {
   }
 
   @Test
-  public void containsAcceptsRootMatcher(final @TempDir Path testFolder) throws IOException {
+  void containsAcceptsRootMatcher(final @TempDir Path testFolder) throws IOException {
     final Resource resource = this.resource(testFolder.resolve("model.aet"));
     final Root root = root("root");
     resource.getContents().add(root);
@@ -52,7 +55,7 @@ public class ModelMatchersTest {
   }
 
   @Test
-  public void iterableMatchersAcceptTypedLists() {
+  void iterableMatchersAcceptTypedLists() {
     final NonRoot first = nonRoot("first");
     final NonRoot second = nonRoot("second");
     final List<NonRoot> contents = List.of(first);
@@ -63,7 +66,7 @@ public class ModelMatchersTest {
   }
 
   @Test
-  public void resourceUriMatchersUseExistingFiles(final @TempDir Path testFolder)
+  void resourceUriMatchersUseExistingFiles(final @TempDir Path testFolder)
       throws IOException {
     final Resource existingResource = this.resource(testFolder.resolve("existing.aet"));
     existingResource.getContents().add(root("root"));
@@ -78,7 +81,7 @@ public class ModelMatchersTest {
   }
 
   @Test
-  public void objectMatchersMatchModelProperties(final @TempDir Path testFolder)
+  void objectMatchersMatchModelProperties(final @TempDir Path testFolder)
       throws IOException {
     final Resource resource = this.resource(testFolder.resolve("model.aet"));
     final Root root = root("root");
@@ -98,7 +101,7 @@ public class ModelMatchersTest {
   }
 
   @Test
-  public void hasNoErrorsMatchesResourceWithoutDiagnostics(final @TempDir Path testFolder) {
+  void hasNoErrorsMatchesResourceWithoutDiagnostics(final @TempDir Path testFolder) {
     final Resource resource = this.resource(testFolder.resolve("model.aet"));
 
     MatcherAssert.assertThat(resource, ModelMatchers.hasNoErrors());
