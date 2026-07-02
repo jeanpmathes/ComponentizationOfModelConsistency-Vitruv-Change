@@ -21,10 +21,11 @@ class NotificationToEChangeConverterTest {
             UnexpectedNotificationKind.ATTRIBUTE,
             UnexpectedNotificationKind.REFERENCE,
             UnexpectedNotificationKind.RESOURCE_CONTENTS)) {
+      final UnexpectedEventNotification notification = new UnexpectedEventNotification(kind);
       final IllegalArgumentException exception =
           assertThrows(
               IllegalArgumentException.class,
-              () -> converter.convert(new UnexpectedEventNotification(kind)));
+              () -> converter.convert(notification));
 
       assertEquals("Unexpected event type 999", exception.getMessage());
     }
@@ -34,12 +35,13 @@ class NotificationToEChangeConverterTest {
   void unexpectedEventTypeMessageIncludesResourceUriContext() {
     final NotificationToEChangeConverter converter =
         new NotificationToEChangeConverter((left, right) -> false);
+    final UnexpectedEventNotification notification =
+        new UnexpectedEventNotification(UnexpectedNotificationKind.RESOURCE_URI);
 
     final IllegalArgumentException exception =
         assertThrows(
             IllegalArgumentException.class,
-            () -> converter.convert(
-                new UnexpectedEventNotification(UnexpectedNotificationKind.RESOURCE_URI)));
+            () -> converter.convert(notification));
 
     assertEquals(
         "Unexpected event type 999 for Resource URI Notification.",
