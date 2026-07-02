@@ -34,6 +34,7 @@ import tools.vitruv.change.atomic.root.RemoveRootEObject;
  */
 final class NotificationToEChangeConverter {
   private static final String UNEXPECTED_EVENT_TYPE_MESSAGE = "Unexpected event type ";
+  private static final String RESOURCE_URI_NOTIFICATION_MESSAGE = " for Resource URI Notification.";
 
   private final TypeInferringAtomicEChangeFactory changeFactory = TypeInferringAtomicEChangeFactory.getInstance();
 
@@ -45,6 +46,10 @@ final class NotificationToEChangeConverter {
 
   private String convertExceptionMessage(final EventType eventType, final String notificationType) {
     return String.format("Event type {} for {} Notifications unexpected.");
+  }
+
+  private static String unexpectedEventTypeMessage(final NotificationInfo notification) {
+    return UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(notification.getEventType());
   }
 
   private final String ATTRIBUTE_TYPE = "Attribute";
@@ -120,14 +125,10 @@ final class NotificationToEChangeConverter {
                   this.ATTRIBUTE_TYPE);
               throw new IllegalArgumentException(_convertExceptionMessage_1);
             default:
-              int _eventType = notification.getEventType();
-              String _plus = (UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(_eventType));
-              throw new IllegalArgumentException(_plus);
+              throw new IllegalArgumentException(unexpectedEventTypeMessage(notification));
           }
         } else {
-          int _eventType = notification.getEventType();
-          String _plus = (UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(_eventType));
-          throw new IllegalArgumentException(_plus);
+          throw new IllegalArgumentException(unexpectedEventTypeMessage(notification));
         }
         _switchResult = _switchResult_1;
       }
@@ -169,14 +170,10 @@ final class NotificationToEChangeConverter {
                   this.REFERENCE_TYPE);
               throw new IllegalArgumentException(_convertExceptionMessage_3);
             default:
-              int _eventType_1 = notification.getEventType();
-              String _plus_1 = (UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(_eventType_1));
-              throw new IllegalArgumentException(_plus_1);
+              throw new IllegalArgumentException(unexpectedEventTypeMessage(notification));
           }
         } else {
-          int _eventType_1 = notification.getEventType();
-          String _plus_1 = (UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(_eventType_1));
-          throw new IllegalArgumentException(_plus_1);
+          throw new IllegalArgumentException(unexpectedEventTypeMessage(notification));
         }
         _switchResult = _switchResult_2;
       }
@@ -226,14 +223,10 @@ final class NotificationToEChangeConverter {
                       this.RESOURCE_CONTENTS_TYPE);
                   throw new IllegalArgumentException(_convertExceptionMessage_8);
                 default:
-                  int _eventType_2 = notification.getEventType();
-                  String _plus_2 = (UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(_eventType_2));
-                  throw new IllegalArgumentException(_plus_2);
+                  throw new IllegalArgumentException(unexpectedEventTypeMessage(notification));
               }
             } else {
-              int _eventType_2 = notification.getEventType();
-              String _plus_2 = (UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(_eventType_2));
-              throw new IllegalArgumentException(_plus_2);
+              throw new IllegalArgumentException(unexpectedEventTypeMessage(notification));
             }
             _switchResult_3 = _switchResult_4;
             break;
@@ -246,16 +239,12 @@ final class NotificationToEChangeConverter {
                   _switchResult_5 = this.handleSetUriChange(notification);
                   break;
                 default:
-                  int _eventType_3 = notification.getEventType();
-                  String _plus_3 = (UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(_eventType_3));
-                  String _plus_4 = (_plus_3 + " for Resource URI Notification.");
-                  throw new IllegalArgumentException(_plus_4);
+                  throw new IllegalArgumentException(
+                      unexpectedEventTypeMessage(notification) + RESOURCE_URI_NOTIFICATION_MESSAGE);
               }
             } else {
-              int _eventType_3 = notification.getEventType();
-              String _plus_3 = (UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(_eventType_3));
-              String _plus_4 = (_plus_3 + " for Resource URI Notification.");
-              throw new IllegalArgumentException(_plus_4);
+              throw new IllegalArgumentException(
+                  unexpectedEventTypeMessage(notification) + RESOURCE_URI_NOTIFICATION_MESSAGE);
             }
             _switchResult_3 = _switchResult_5;
             break;
