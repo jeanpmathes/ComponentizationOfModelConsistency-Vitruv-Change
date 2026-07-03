@@ -540,9 +540,9 @@ public class ChangeRecorder implements AutoCloseable {
       return Objects.equals(notifier, this.resourceSet);
     }
 
-    String _simpleName = notifier.getClass().getSimpleName();
-    String _plus = ("Unexpected notifier type: " + _simpleName);
-    throw new IllegalStateException(_plus);
+    String simpleName = notifier.getClass().getSimpleName();
+    String message = ("Unexpected notifier type: " + simpleName);
+    throw new IllegalStateException(message);
   }
   private static void recursively(final Notifier object, final Function<Notifier, Boolean> action) {
     if (object instanceof EObject
