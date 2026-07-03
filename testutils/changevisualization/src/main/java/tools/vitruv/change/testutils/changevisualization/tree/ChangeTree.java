@@ -204,6 +204,22 @@ public class ChangeTree extends ChangeComponent {
         });
   }
 
+  public JTree getTreeUI() {
+    return treeUI;
+  }
+
+  public JTextArea getDetailsUI() {
+    return detailsUI;
+  }
+
+  public JSplitPane getDetailsSplitpane() {
+    return detailsSplitpane;
+  }
+
+  public JScrollPane getTreeScroller() {
+    return treeScroller;
+  }
+
   /** Sets the enabled state of the ChangeTree. */
   @Override
   public void setEnabled(boolean isEnabled) {
