@@ -113,30 +113,44 @@ public class ChangeTree extends ChangeComponent {
    * @param path The path pointing to the selected node
    */
   private void updateDetailsUI(TreePath path) {
-    if (path != null) {
-      DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();
-      if (selectedNode != null) {
-        Object userObj = selectedNode.getUserObject();
-        if (userObj != null) {
-          if (userObj instanceof FeatureNode) {
-            String details = ((FeatureNode) userObj).getDetails();
-            String[][] detailsArray = ((FeatureNode) userObj).getDetailsArray();
-            Component detailsComp = ((FeatureNode) userObj).getDetailsUI();
-            if (details != null) {
-              detailsUI.setText(details);
-            } else if (detailsArray != null) {
-              detailsSplitpane.setRightComponent(new LabelValuePanel(detailsArray));
-            } else if (detailsComp != null) {
-              detailsSplitpane.setRightComponent(detailsComp);
-            }
-          } else if (userObj instanceof ChangeNode) {
-            // ChangeNode creates the component on the fly for us
-            Component detailsComp = ((ChangeNode) userObj).getDetailsUI();
-            detailsSplitpane.setRightComponent(detailsComp);
-          }
-        }
-      }
+    if (path == null) {
+      return;
     }
+
+    DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) path.getLastPathComponent();
+    if (selectedNode == null) {
+      return;
+    }
+
+    updateDetailsForUserObject(selectedNode.getUserObject());
+  }
+
+  private void updateDetailsForUserObject(Object userObj) {
+    if (userObj instanceof FeatureNode) {
+      updateDetailsForFeatureNode((FeatureNode) userObj);
+    } else if (userObj instanceof ChangeNode) {
+      updateDetailsForChangeNode((ChangeNode) userObj);
+    }
+  }
+
+  private void updateDetailsForFeatureNode(FeatureNode featureNode) {
+    String details = featureNode.getDetails();
+    String[][] detailsArray = featureNode.getDetailsArray();
+    Component detailsComp = featureNode.getDetailsUI();
+
+    if (details != null) {
+      detailsUI.setText(details);
+    } else if (detailsArray != null) {
+      detailsSplitpane.setRightComponent(new LabelValuePanel(detailsArray));
+    } else if (detailsComp != null) {
+      detailsSplitpane.setRightComponent(detailsComp);
+    }
+  }
+
+  private void updateDetailsForChangeNode(ChangeNode changeNode) {
+    // ChangeNode creates the component on the fly for us
+    Component detailsComp = changeNode.getDetailsUI();
+    detailsSplitpane.setRightComponent(detailsComp);
   }
 
   /** The actual changeDataSet. */
