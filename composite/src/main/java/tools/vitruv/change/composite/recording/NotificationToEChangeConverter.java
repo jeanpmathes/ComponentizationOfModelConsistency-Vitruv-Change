@@ -1,17 +1,20 @@
 package tools.vitruv.change.composite.recording;
 
+import static tools.vitruv.change.composite.message.Error.RESOURCE_URI_NOTIFICATION;
+import static tools.vitruv.change.composite.message.Error.UNEXPECTED_EVENT_TYPE;
+
 import com.google.common.collect.Iterables;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EAttribute;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.EStructuralFeature;
 import org.eclipse.emf.ecore.resource.Resource;
-import java.util.function.Function;
-import java.util.function.BiFunction;
 import tools.vitruv.change.atomic.EChange;
 import tools.vitruv.change.atomic.TypeInferringAtomicEChangeFactory;
 import tools.vitruv.change.atomic.eobject.CreateEObject;
@@ -33,9 +36,6 @@ import tools.vitruv.change.atomic.root.RemoveRootEObject;
  * @author Heiko Klare
  */
 final class NotificationToEChangeConverter {
-  private static final String UNEXPECTED_EVENT_TYPE_MESSAGE = "Unexpected event type ";
-  private static final String RESOURCE_URI_NOTIFICATION_MESSAGE = " for Resource URI Notification.";
-
   private final TypeInferringAtomicEChangeFactory changeFactory = TypeInferringAtomicEChangeFactory.getInstance();
 
   private final BiFunction<EObject, EObject, Boolean> isCreateChange;
@@ -49,7 +49,7 @@ final class NotificationToEChangeConverter {
   }
 
   private static String unexpectedEventTypeMessage(final NotificationInfo notification) {
-    return UNEXPECTED_EVENT_TYPE_MESSAGE + Integer.valueOf(notification.getEventType());
+    return UNEXPECTED_EVENT_TYPE + Integer.valueOf(notification.getEventType());
   }
 
   private final String ATTRIBUTE_TYPE = "Attribute";
@@ -240,11 +240,11 @@ final class NotificationToEChangeConverter {
                   break;
                 default:
                   throw new IllegalArgumentException(
-                      unexpectedEventTypeMessage(notification) + RESOURCE_URI_NOTIFICATION_MESSAGE);
+                      unexpectedEventTypeMessage(notification) + RESOURCE_URI_NOTIFICATION);
               }
             } else {
               throw new IllegalArgumentException(
-                  unexpectedEventTypeMessage(notification) + RESOURCE_URI_NOTIFICATION_MESSAGE);
+                  unexpectedEventTypeMessage(notification) + RESOURCE_URI_NOTIFICATION);
             }
             _switchResult_3 = _switchResult_5;
             break;
