@@ -102,9 +102,7 @@ final class NotificationToEChangeConverter {
       case REMOVE -> this.handleRemoveAttribute(notification);
       case REMOVE_MANY -> this.handleMultiRemoveAttribute(notification);
       case MOVE -> this.handleMoveAttribute(notification);
-      case RESOLVE, REMOVING_ADAPTER -> {
-        throw unexpectedNotificationEvent(eventType, ATTRIBUTE_TYPE);
-      }
+      case RESOLVE, REMOVING_ADAPTER -> throw unexpectedNotificationEvent(eventType, ATTRIBUTE_TYPE);
       default -> throw unexpectedEventType(notification);
     };
   }
@@ -121,9 +119,7 @@ final class NotificationToEChangeConverter {
       case REMOVE -> this.handleRemoveReference(notification);
       case REMOVE_MANY -> this.handleMultiRemoveReference(notification);
       case MOVE -> this.handleMoveReference(notification);
-      case RESOLVE, REMOVING_ADAPTER -> {
-        throw unexpectedNotificationEvent(eventType, REFERENCE_TYPE);
-      }
+      case RESOLVE, REMOVING_ADAPTER -> throw unexpectedNotificationEvent(eventType, REFERENCE_TYPE);
       default -> throw unexpectedEventType(notification);
     };
   }
