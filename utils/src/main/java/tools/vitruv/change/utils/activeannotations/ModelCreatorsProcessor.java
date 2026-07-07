@@ -69,11 +69,18 @@ public class ModelCreatorsProcessor extends AbstractClassProcessor {
     StreamSupport.stream(factory.getDeclaredResolvedMethods().spliterator(), false)
         .map(rm -> rm.getDeclaration())
         .filter(
-            m -> m.getSimpleName().startsWith(METHOD_NAME_CREATE) && !m.getParameters().iterator().hasNext())
+            m ->
+                    m.getSimpleName().startsWith(METHOD_NAME_CREATE)
+                            && !m.getParameters().iterator().hasNext())
         .forEach(
             createMethod -> {
               String baseName =
-                  removePrefix(removePrefix(createMethod.getSimpleName(), METHOD_NAME_CREATE), stripPrefix);
+                  removePrefix(
+                          removePrefix(
+                                  createMethod.getSimpleName(),
+                                  METHOD_NAME_CREATE
+                          ),
+                          stripPrefix);
               String targetName =
                   prefix + toFirstUpper(replacements.getOrDefault(baseName, baseName));
               TypeReference returnType = createMethod.getReturnType();
