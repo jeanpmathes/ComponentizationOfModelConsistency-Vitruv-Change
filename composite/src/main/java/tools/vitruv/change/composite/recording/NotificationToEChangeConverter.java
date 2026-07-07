@@ -42,7 +42,11 @@ final class NotificationToEChangeConverter {
   }
 
   private String convertExceptionMessage(final EventType eventType, final String notificationType) {
-    return String.format("Event type %s for %s Notifications unexpected.", eventType, notificationType);
+    return String.format(
+            "Event type %s for %s Notifications unexpected.",
+            eventType,
+            notificationType
+    );
   }
 
   private final String ATTRIBUTE_TYPE = "Attribute";
@@ -95,7 +99,9 @@ final class NotificationToEChangeConverter {
       case REMOVE -> this.handleRemoveAttribute(notification);
       case REMOVE_MANY -> this.handleMultiRemoveAttribute(notification);
       case MOVE -> this.handleMoveAttribute(notification);
-      case RESOLVE, REMOVING_ADAPTER -> throw unexpectedNotificationEvent(eventType, ATTRIBUTE_TYPE);
+      case RESOLVE, REMOVING_ADAPTER -> {
+        throw unexpectedNotificationEvent(eventType, ATTRIBUTE_TYPE);
+      }
       default -> throw unexpectedEventType(notification);
     };
   }
@@ -112,7 +118,9 @@ final class NotificationToEChangeConverter {
       case REMOVE -> this.handleRemoveReference(notification);
       case REMOVE_MANY -> this.handleMultiRemoveReference(notification);
       case MOVE -> this.handleMoveReference(notification);
-      case RESOLVE, REMOVING_ADAPTER -> throw unexpectedNotificationEvent(eventType, REFERENCE_TYPE);
+      case RESOLVE, REMOVING_ADAPTER -> {
+        throw unexpectedNotificationEvent(eventType, REFERENCE_TYPE);
+      }
       default -> throw unexpectedEventType(notification);
     };
   }
@@ -175,9 +183,13 @@ final class NotificationToEChangeConverter {
     return new IllegalArgumentException("Unexpected event type " + notification.getEventType());
   }
 
-  private IllegalArgumentException unexpectedResourceUriEventType(final NotificationInfo notification) {
-    return new IllegalArgumentException(
-            "Unexpected event type " + notification.getEventType() + " for Resource URI Notification.");
+  private IllegalArgumentException unexpectedResourceUriEventType(
+          final NotificationInfo notification) {
+    final String message = "Unexpected event type "
+            + notification.getEventType()
+            + " for Resource URI Notification.";
+
+    return new IllegalArgumentException(message);
   }
 
   private IllegalArgumentException unexpectedNotificationEvent(
