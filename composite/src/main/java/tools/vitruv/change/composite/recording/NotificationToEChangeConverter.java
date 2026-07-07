@@ -52,10 +52,6 @@ final class NotificationToEChangeConverter {
     );
   }
 
-  private static String unexpectedEventTypeMessage(final NotificationInfo notification) {
-    return UNEXPECTED_EVENT_TYPE + Integer.valueOf(notification.getEventType());
-  }
-
   private final String ATTRIBUTE_TYPE = "Attribute";
 
   private final String REFERENCE_TYPE = "Reference";
@@ -187,14 +183,14 @@ final class NotificationToEChangeConverter {
   }
 
   private IllegalArgumentException unexpectedEventType(final NotificationInfo notification) {
-    return new IllegalArgumentException("Unexpected event type " + notification.getEventType());
+    return new IllegalArgumentException(UNEXPECTED_EVENT_TYPE + notification.getEventType());
   }
 
   private IllegalArgumentException unexpectedResourceUriEventType(
           final NotificationInfo notification) {
-    final String message = "Unexpected event type "
+    final String message = UNEXPECTED_EVENT_TYPE
             + notification.getEventType()
-            + " for Resource URI Notification.";
+            + RESOURCE_URI_NOTIFICATION;
 
     return new IllegalArgumentException(message);
   }
