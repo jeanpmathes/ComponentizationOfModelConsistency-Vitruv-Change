@@ -42,7 +42,7 @@ final class NotificationToEChangeConverter {
   }
 
   private String convertExceptionMessage(final EventType eventType, final String notificationType) {
-    return String.format("Event type {} for {} Notifications unexpected.");
+    return String.format("Event type %s for %s Notifications unexpected.", eventType, notificationType);
   }
 
   private final String ATTRIBUTE_TYPE = "Attribute";
