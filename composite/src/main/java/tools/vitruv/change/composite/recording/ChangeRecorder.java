@@ -60,88 +60,89 @@ public class ChangeRecorder implements AutoCloseable {
     }
 
     private void handleAdaptersForResourceAndResourceSetChanges(final Notification notification) {
-      if (((notification.getNotifier() instanceof ResourceSet) && 
-        (notification.getFeatureID(ResourceSet.class) == ResourceSet.RESOURCE_SET__RESOURCES))) {
-        int _eventType = notification.getEventType();
-        switch (_eventType) {
-          case Notification.ADD:
-            Object _newValue = notification.getNewValue();
-            this.startLoadingResource(((Resource) _newValue));
-            break;
-          case Notification.ADD_MANY:
-            Object _newValue_1 = notification.getNewValue();
-            final Consumer<Resource> _function = (Resource it) -> {
-              this.startLoadingResource(it);
-            };
-            ((Iterable<? extends Resource>) _newValue_1).forEach(_function);
-            break;
-          default:
-            break;
-        }
+      boolean isResourceSetChange = isResourceSetResourcesChange(notification);
+
+      if (isResourceSetChange) {
+        handleResourceSetLoading(notification);
       }
-      Object _feature = notification.getFeature();
-      final Object feature = _feature;
-      boolean _matched = false;
-      if (feature instanceof EReference) {
-        boolean _isContainment = ((EReference)feature).isContainment();
-        if (_isContainment) {
-          _matched=true;
-        }
+
+      if (isContainmentChange(notification, isResourceSetChange)) {
+        handleInfectionAndDesinfection(notification);
+        return;
       }
-      if (!_matched) {
-        if (((notification.getNotifier() instanceof Resource) && 
-          (notification.getFeatureID(Resource.class) == Resource.RESOURCE__CONTENTS))) {
-          _matched=true;
-        }
+
+      if (isResourceIsLoadedChange(notification)) {
+        this.finishLoadingResource((Resource) notification.getNotifier());
       }
-      if (!_matched) {
-        if (((notification.getNotifier() instanceof ResourceSet) && 
-          (notification.getFeatureID(ResourceSet.class) == ResourceSet.RESOURCE_SET__RESOURCES))) {
-          _matched=true;
-        }
+    }
+
+    private void handleResourceSetLoading(final Notification notification) {
+      switch (notification.getEventType()) {
+        case Notification.ADD:
+          this.startLoadingResource((Resource) notification.getNewValue());
+          break;
+        case Notification.ADD_MANY:
+          ((Iterable<? extends Resource>) notification.getNewValue())
+                  .forEach(this::startLoadingResource);
+          break;
+        default:
+          break;
       }
-      if (_matched) {
-        int _eventType_1 = notification.getEventType();
-        switch (_eventType_1) {
-          case Notification.SET:
-          case Notification.REMOVE:
-            this.desinfect(notification.getOldValue());
-            break;
-          case Notification.REMOVE_MANY:
-            Object _oldValue = notification.getOldValue();
-            final Consumer<Object> _function_1 = (Object it) -> {
-              this.desinfect(it);
-            };
-            ((Iterable<?>) _oldValue).forEach(_function_1);
-            break;
-          default:
-            break;
-        }
-        int _eventType_2 = notification.getEventType();
-        switch (_eventType_2) {
-          case Notification.ADD:
-          case Notification.SET:
-            this.infect(notification.getNewValue());
-            break;
-          case Notification.ADD_MANY:
-            Object _newValue_2 = notification.getNewValue();
-            final Consumer<Object> _function_2 = (Object it) -> {
-              this.infect(it);
-            };
-            ((Iterable<?>) _newValue_2).forEach(_function_2);
-            break;
-          default:
-            break;
-        }
+    }
+
+    private void handleInfectionAndDesinfection(final Notification notification) {
+      int eventType = notification.getEventType();
+
+      switch (eventType) {
+        case Notification.SET:
+        case Notification.REMOVE:
+          this.desinfect(notification.getOldValue());
+          break;
+        case Notification.REMOVE_MANY:
+          ((Iterable<?>) notification.getOldValue()).forEach(this::desinfect);
+          break;
+        default:
+          break;
       }
-      if (!_matched) {
-        if (((notification.getNotifier() instanceof Resource) && 
-          (notification.getFeatureID(Resource.class) == Resource.RESOURCE__IS_LOADED))) {
-          _matched=true;
-          Object _notifier = notification.getNotifier();
-          this.finishLoadingResource(((Resource) _notifier));
-        }
+
+      switch (eventType) {
+        case Notification.ADD:
+        case Notification.SET:
+          this.infect(notification.getNewValue());
+          break;
+        case Notification.ADD_MANY:
+          ((Iterable<?>) notification.getNewValue()).forEach(this::infect);
+          break;
+        default:
+          break;
       }
+    }
+
+    private boolean isContainmentChange(
+            final Notification notification, final boolean isResourceSetChange) {
+      return isContainmentEReference(notification)
+              || isResourceContentsChange(notification)
+              || isResourceSetChange;
+    }
+
+    private boolean isContainmentEReference(final Notification notification) {
+      Object feature = notification.getFeature();
+      return feature instanceof EReference eReference && eReference.isContainment();
+    }
+
+    private boolean isResourceContentsChange(final Notification notification) {
+      return notification.getNotifier() instanceof Resource
+              && notification.getFeatureID(Resource.class) == Resource.RESOURCE__CONTENTS;
+    }
+
+    private boolean isResourceSetResourcesChange(final Notification notification) {
+      return notification.getNotifier() instanceof ResourceSet
+              && notification.getFeatureID(ResourceSet.class) == ResourceSet.RESOURCE_SET__RESOURCES;
+    }
+
+    private boolean isResourceIsLoadedChange(final Notification notification) {
+      return notification.getNotifier() instanceof Resource
+              && notification.getFeatureID(Resource.class) == Resource.RESOURCE__IS_LOADED;
     }
 
     private Iterable<? extends EChange<EObject>> extractRelevantChanges(final Notification notification) {
@@ -266,6 +267,9 @@ public class ChangeRecorder implements AutoCloseable {
 
     @Override
     public void setTarget(final Notifier newTarget) {
+      // Intentionally empty: this recorder does not track a single adapter target
+      // (getTarget() always returns null). It is attached to and detached from notifiers
+      // explicitly by the enclosing ChangeRecorder, so EMF's target callback needs no action.
     }
 
     public NotificationRecorder(final ChangeRecorder outer) {
@@ -413,61 +417,56 @@ public class ChangeRecorder implements AutoCloseable {
    * of the list. Contained elements are deleted before their container.
    */
   private List<EChange<EObject>> postprocessRemovals(final List<EChange<EObject>> changes) {
-    boolean _isEmpty = changes.isEmpty();
-    if (_isEmpty) {
+    if (changes.isEmpty()) {
       return changes;
     }
-    final Set<EObject> removedElements = new HashSet<EObject>();
-    for (final EChange<EObject> eChange : changes) {
-      {
-        boolean _matched = false;
-        if (eChange instanceof EObjectSubtractedEChange) {
-          _matched=true;
-          boolean _isContainmentRemoval = EChangeUtil.isContainmentRemoval(eChange);
-          if (_isContainmentRemoval) {
-            EObject _oldValue = ((EObjectSubtractedEChange<EObject>)eChange).getOldValue();
-            removedElements.add(_oldValue);
-          }
-        }
-        boolean _matched_1 = false;
-        if (eChange instanceof EObjectAddedEChange) {
-          _matched_1=true;
-          boolean _isContainmentInsertion = EChangeUtil.isContainmentInsertion(eChange);
-          if (_isContainmentInsertion) {
-            EObject _newValue = ((EObjectAddedEChange<EObject>)eChange).getNewValue();
-            removedElements.remove(_newValue);
-          }
-        }
-      }
-    }
-    boolean _isEmpty_1 = removedElements.isEmpty();
-    boolean _not = (!_isEmpty_1);
-    if (_not) {
-      final Map<EObject, Iterable<EObject>> allElementsToDelete = new HashMap<EObject, Iterable<EObject>>();
-      for (EObject element : removedElements) {
-        boolean _exists = allElementsToDelete.values().stream().anyMatch(it -> Iterables.contains(it, element));
-        if (_exists) {
-          continue;
-        }
-        List<EObject> elementsToDelete = new ArrayList<>(Lists.newArrayList(element.eAllContents()));
-        java.util.Collections.reverse(elementsToDelete);
-        for (EObject child : elementsToDelete) {
-          if (allElementsToDelete.containsKey(child)) {
-            allElementsToDelete.remove(child);
-          }
-        }
-        elementsToDelete.add(element);
-        allElementsToDelete.put(element, elementsToDelete);
-      }
-      List<EChange<EObject>> _list = new ArrayList<>();
-      for (Iterable<EObject> elementsToDelete : allElementsToDelete.values()) {
-        for (EObject it : elementsToDelete) {
-          _list.add(this.converter.createDeleteChange(it));
-        }
-      }
-      Iterables.<EChange<EObject>>addAll(changes, _list);
+    final Set<EObject> removedElements = findRemovedElements(changes);
+    if (!removedElements.isEmpty()) {
+      appendDeleteChanges(changes, removedElements);
     }
     return changes;
+  }
+
+  private static Set<EObject> findRemovedElements(final List<EChange<EObject>> changes) {
+    final Set<EObject> removedElements = new HashSet<>();
+    for (final EChange<EObject> eChange : changes) {
+      if (eChange instanceof EObjectSubtractedEChange
+          && EChangeUtil.isContainmentRemoval(eChange)) {
+        removedElements.add(((EObjectSubtractedEChange<EObject>) eChange).getOldValue());
+      }
+      if (eChange instanceof EObjectAddedEChange
+          && EChangeUtil.isContainmentInsertion(eChange)) {
+        removedElements.remove(((EObjectAddedEChange<EObject>) eChange).getNewValue());
+      }
+    }
+    return removedElements;
+  }
+
+  private void appendDeleteChanges(final List<EChange<EObject>> changes,
+      final Set<EObject> removedElements) {
+    final Map<EObject, Iterable<EObject>> allElementsToDelete = new HashMap<>();
+    for (final EObject element : removedElements) {
+      boolean alreadyContained =
+          allElementsToDelete.values().stream().anyMatch(it -> Iterables.contains(it, element));
+      if (alreadyContained) {
+        continue;
+      }
+      final List<EObject> elementsToDelete =
+          new ArrayList<>(Lists.newArrayList(element.eAllContents()));
+      java.util.Collections.reverse(elementsToDelete);
+      for (final EObject child : elementsToDelete) {
+        allElementsToDelete.remove(child);
+      }
+      elementsToDelete.add(element);
+      allElementsToDelete.put(element, elementsToDelete);
+    }
+    final List<EChange<EObject>> deleteChanges = new ArrayList<>();
+    for (final Iterable<EObject> elementsToDelete : allElementsToDelete.values()) {
+      for (final EObject it : elementsToDelete) {
+        deleteChanges.add(this.converter.createDeleteChange(it));
+      }
+    }
+    Iterables.<EChange<EObject>>addAll(changes, deleteChanges);
   }
 
   public TransactionalChange<EObject> getChange() {
@@ -531,44 +530,22 @@ public class ChangeRecorder implements AutoCloseable {
   }
 
   private boolean isInOurResourceSet(final Notifier notifier) {
-    boolean _switchResult = false;
-    boolean _matched = false;
-    if (Objects.equals(notifier, null)) {
-      _matched=true;
-      _switchResult = true;
+    if (notifier == null) {
+      return true;
     }
-    if (!_matched) {
-      if (notifier instanceof EObject) {
-        _matched=true;
-        Resource _eResource = null;
-        if (((EObject)notifier)!=null) {
-          _eResource=((EObject)notifier).eResource();
-        }
-        _switchResult = this.isInOurResourceSet(_eResource);
-      }
+    if (notifier instanceof EObject) {
+      return this.isInOurResourceSet(((EObject) notifier).eResource());
     }
-    if (!_matched) {
-      if (notifier instanceof Resource) {
-        _matched=true;
-        ResourceSet _resourceSet = null;
-        if (((Resource)notifier)!=null) {
-          _resourceSet=((Resource)notifier).getResourceSet();
-        }
-        _switchResult = this.isInOurResourceSet(_resourceSet);
-      }
+    if (notifier instanceof Resource) {
+      return this.isInOurResourceSet(((Resource) notifier).getResourceSet());
     }
-    if (!_matched) {
-      if (notifier instanceof ResourceSet) {
-        _matched=true;
-        _switchResult = Objects.equals(notifier, this.resourceSet);
-      }
+    if (notifier instanceof ResourceSet) {
+      return Objects.equals(notifier, this.resourceSet);
     }
-    if (!_matched) {
-      String _simpleName = notifier.getClass().getSimpleName();
-      String _plus = ("Unexpected notifier type: " + _simpleName);
-      throw new IllegalStateException(_plus);
-    }
-    return _switchResult;
+
+    String simpleName = notifier.getClass().getSimpleName();
+    String message = ("Unexpected notifier type: " + simpleName);
+    throw new IllegalStateException(message);
   }
   private static void recursively(final Notifier object, final Function<Notifier, Boolean> action) {
     if (object instanceof EObject
