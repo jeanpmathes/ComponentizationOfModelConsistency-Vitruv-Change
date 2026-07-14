@@ -16,7 +16,6 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import tools.vitruv.change.atomic.EChange;
 import tools.vitruv.change.atomic.uuid.Uuid;
-import tools.vitruv.change.composite.MetamodelDescriptor;
 import tools.vitruv.change.composite.description.CompositeChange;
 import tools.vitruv.change.composite.description.CompositeContainerChange;
 import tools.vitruv.change.composite.description.PropagatedChange;
@@ -133,12 +132,7 @@ public class ChangePropagator {
     }
 
     private Iterable<TransactionalChange<EObject>> propagateChangeForChangePropagationSpecification(final TransactionalChange<EObject> change, final ChangePropagationSpecification propagationSpecification) {
-      final Runnable _function = () -> {
-        for (final EChange<EObject> eChange : change.getEChanges()) {
-          propagationSpecification.propagateChange(eChange, this.outer.modelRepository.getCorrespondenceModel(),
-            this.outer.modelRepository);
-        }
-      };
+      final Runnable _function = () -> propagationSpecification.propagateChanges(change.getEChanges(), this.outer.modelRepository.getCorrespondenceModel(), this.outer.modelRepository);
       final Iterable<TransactionalChange<EObject>> transitiveChanges = this.outer.modelRepository.recordChanges(_function);
       StreamSupport.stream(transitiveChanges.spliterator(), false)
           .flatMap(it -> it.getAffectedEObjects().stream())

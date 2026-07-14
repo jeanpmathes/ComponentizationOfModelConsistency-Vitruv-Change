@@ -4,6 +4,9 @@ import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 
+import java.util.Collection;
+import java.util.Set;
+
 /** Offers possibilities for resource access and persistence. */
 public interface ResourceAccess {
   /**
@@ -22,6 +25,11 @@ public interface ResourceAccess {
    * @param uri the model's uri, must not be {@code null}
    */
   Resource getModelResource(URI uri);
+
+  /**
+   * Provides all resources for storing models.
+   */
+  Collection<Resource> getModelResources();
 
   /**
    * Persists the given {@code rootObject} at the given {@code uri}.

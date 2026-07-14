@@ -8,6 +8,8 @@ import tools.vitruv.change.correspondence.view.EditableCorrespondenceModelView;
 import tools.vitruv.change.interaction.UserInteractor;
 import tools.vitruv.change.utils.ResourceAccess;
 
+import java.util.List;
+
 /**
  * A specification of change propagation, which is able to process changes
  * and update other, dependent models to reflect these changes as well.
@@ -56,6 +58,25 @@ public interface ChangePropagationSpecification extends ChangePropagationObserva
    */
   boolean doesHandleChange(EChange<EObject> change,
       EditableCorrespondenceModelView<Correspondence> correspondenceModel);
+
+  /**
+   * Performs modifications in target models identified by accessing the given
+   * <code>CorrespondenceModel</code> for the elements changed by the given <code>EChange</code>
+   * in order to reflect the changes in the target model.
+   *
+   * @param changes - the atomic changes which shall be propagated.
+   *     Should affect only elements in an instance of a source metamodel of this specification
+   *     (see {@link #getSourceMetamodelDescriptor}). Must not be <code>null</code>.
+   * @param correspondenceModel - the correspondence model to retrieve information about the target
+   *     model from. Must not be <code>null</code>.
+   * @param resourceAccess - an object for resource access,
+   *     in particular to create new model files. Must not be <code>null</code>.
+   */
+  default void propagateChanges(List<EChange<EObject>> changes,
+                                EditableCorrespondenceModelView<Correspondence> correspondenceModel,
+                                ResourceAccess resourceAccess) {
+      changes.forEach(change -> propagateChange(change, correspondenceModel, resourceAccess));
+  }
 
   /**
    * Performs modifications in target models identified by accessing the given

@@ -7,6 +7,7 @@ import static tools.vitruv.change.correspondence.model.CorrespondenceModelFactor
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -105,6 +106,11 @@ public class DefaultChangeRecordingModelRepository
   @Override
   public Resource getModelResource(URI uri) {
     return getCreateOrLoadModel(uri);
+  }
+
+  @Override
+  public Collection<Resource> getModelResources() {
+    return modelsResourceSet.getResources();
   }
 
   private Resource getCreateOrLoadModel(URI modelResourceURI) {
