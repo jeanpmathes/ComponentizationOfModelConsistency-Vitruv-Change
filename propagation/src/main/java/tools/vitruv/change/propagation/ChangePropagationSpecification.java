@@ -71,10 +71,12 @@ public interface ChangePropagationSpecification extends ChangePropagationObserva
    *     model from. Must not be <code>null</code>.
    * @param resourceAccess - an object for resource access,
    *     in particular to create new model files. Must not be <code>null</code>.
+   * @param previousState the state of the models before the changes were applied
    */
   default void propagateChanges(List<EChange<EObject>> changes,
                                 EditableCorrespondenceModelView<Correspondence> correspondenceModel,
-                                ResourceAccess resourceAccess) {
+                                ResourceAccess resourceAccess,
+                                ModelRepositorySnapshot previousState) {
       changes.forEach(change -> propagateChange(change, correspondenceModel, resourceAccess));
   }
 

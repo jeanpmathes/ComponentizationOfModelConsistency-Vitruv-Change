@@ -7,10 +7,10 @@ import static tools.vitruv.change.correspondence.model.CorrespondenceModelFactor
 
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.emf.common.util.URI;
@@ -20,16 +20,15 @@ import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import tools.vitruv.change.atomic.uuid.Uuid;
 import tools.vitruv.change.atomic.uuid.UuidResolver;
-import tools.vitruv.change.composite.description.TransactionalChange;
-import tools.vitruv.change.composite.description.VitruviusChange;
-import tools.vitruv.change.composite.description.VitruviusChangeResolver;
-import tools.vitruv.change.composite.description.VitruviusChangeResolverFactory;
+import tools.vitruv.change.composite.description.*;
 import tools.vitruv.change.composite.recording.ChangeRecorder;
 import tools.vitruv.change.correspondence.Correspondence;
 import tools.vitruv.change.correspondence.model.PersistableCorrespondenceModel;
 import tools.vitruv.change.correspondence.view.CorrespondenceModelViewFactory;
 import tools.vitruv.change.correspondence.view.EditableCorrespondenceModelView;
+import tools.vitruv.change.propagation.ModelRepositorySnapshot;
 import tools.vitruv.change.propagation.PersistableChangeRecordingModelRepository;
+import tools.vitruv.change.propagation.TransactionalChangeWithPreviousState;
 
 /**
  * A default implementation of a {@link PersistableChangeRecordingModelRepository}. It manages a
@@ -188,6 +187,41 @@ public class DefaultChangeRecordingModelRepository
   @Override
   public VitruviusChange<EObject> applyChange(VitruviusChange<Uuid> change) {
     return changeResolver.resolveAndApply(change);
+  }
+
+  @Override
+  public ModelRepositorySnapshot createSnapshot() {
+    return DefaultModelRepositorySnapshot.copyOf(modelsResourceSet, this::getMetadataModelURI);
+  }
+
+  @Override
+  public List<TransactionalChangeWithPreviousState> applyChangeAndStorePreviousState(VitruviusChange<Uuid> change) {
+    List<TransactionalChangeWithPreviousState> result = new ArrayList<>();
+
+    for (TransactionalChange<Uuid> transactionalChange : change.getTransactionalChangeSequence()) {
+      ModelRepositorySnapshot previousState = createSnapshot();
+
+      try {
+        var resolvedTransactionalChange = (TransactionalChange<EObject>) changeResolver.resolveAndApply(transactionalChange);
+        result.add(new TransactionalChangeWithPreviousState(resolvedTransactionalChange, previousState));
+      } catch (Exception e) {
+          try {
+              previousState.close();
+              result.forEach(entry -> {
+                  try {
+                      entry.previousState().close();
+                  } catch (Exception ex) {
+                      throw new RuntimeException(ex);
+                  }
+              });
+          } catch (Exception ex) {
+              throw new RuntimeException(ex);
+          }
+          throw e;
+      }
+    }
+
+    return result;
   }
 
   @Override
