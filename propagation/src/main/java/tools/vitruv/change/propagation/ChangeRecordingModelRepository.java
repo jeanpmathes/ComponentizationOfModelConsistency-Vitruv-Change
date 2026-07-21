@@ -50,7 +50,7 @@ public interface ChangeRecordingModelRepository extends ResourceAccess, AutoClos
    */
   Iterable<TransactionalChange<EObject>> recordChanges(Runnable changeApplicator);
 
-  ModelRepositorySnapshot createSnapshot();
+  ModelSnapshot createSnapshot();
 
   List<TransactionalChangeWithPreviousState> applyChangeAndStorePreviousState(VitruviusChange<Uuid> change);
 }

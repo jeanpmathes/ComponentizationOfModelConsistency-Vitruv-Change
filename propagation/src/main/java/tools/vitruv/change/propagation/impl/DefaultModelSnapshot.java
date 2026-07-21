@@ -9,7 +9,7 @@ import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.ecore.resource.ResourceSet;
 import org.eclipse.emf.ecore.resource.impl.ResourceSetImpl;
 import org.eclipse.emf.ecore.util.EcoreUtil;
-import tools.vitruv.change.propagation.ModelRepositorySnapshot;
+import tools.vitruv.change.propagation.ModelSnapshot;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,20 +19,20 @@ import java.util.function.Function;
 
 import static edu.kit.ipd.sdq.commons.util.org.eclipse.emf.ecore.resource.ResourceSetUtil.withGlobalFactories;
 
-public class DefaultModelRepositorySnapshot implements ModelRepositorySnapshot {
+public class DefaultModelSnapshot implements ModelSnapshot {
   private final ResourceSet resourceSet;
   private final BiMap<EObject, EObject> repositoryToSnapshot;
   private final Function<String[], URI> metadataModelUriProvider;
 
-  public DefaultModelRepositorySnapshot(ResourceSet resourceSet, BiMap<EObject, EObject> repositoryToSnapshot, Function<String[], URI> metadataModelUriProvider) {
+  public DefaultModelSnapshot(ResourceSet resourceSet, BiMap<EObject, EObject> repositoryToSnapshot, Function<String[], URI> metadataModelUriProvider) {
     this.resourceSet = resourceSet;
     this.repositoryToSnapshot = repositoryToSnapshot;
     this.metadataModelUriProvider = metadataModelUriProvider;
   }
 
-  public static ModelRepositorySnapshot copyOf(ResourceSet resourceSet, Function<String[], URI> metadataModelUriProvider) {
+  public static ModelSnapshot copyOf(ResourceSet resourceSet, Function<String[], URI> metadataModelUriProvider) {
     ResourceSetCopy resourceSetCopy = copyResourceSet(resourceSet);
-    return new DefaultModelRepositorySnapshot(resourceSetCopy.resourceSet(), resourceSetCopy.originalToCopy(), metadataModelUriProvider);
+    return new DefaultModelSnapshot(resourceSetCopy.resourceSet(), resourceSetCopy.originalToCopy(), metadataModelUriProvider);
   }
 
   private static ResourceSetCopy copyResourceSet(ResourceSet originalResourceSet) {
@@ -74,13 +74,13 @@ public class DefaultModelRepositorySnapshot implements ModelRepositorySnapshot {
   }
 
   @Override
-  public ModelRepositorySnapshot copy() {
+  public ModelSnapshot copy() {
     ResourceSetCopy copy = copyResourceSet(resourceSet);
     HashBiMap<EObject, EObject> repositoryToCopy = HashBiMap.create(repositoryToSnapshot.size());
 
     repositoryToSnapshot.forEach((repository, snapshot) -> repositoryToCopy.put(repository, copy.originalToCopy().get(snapshot)));
 
-    return new DefaultModelRepositorySnapshot(copy.resourceSet(), repositoryToCopy, metadataModelUriProvider);
+    return new DefaultModelSnapshot(copy.resourceSet(), repositoryToCopy, metadataModelUriProvider);
   }
 
   @Override

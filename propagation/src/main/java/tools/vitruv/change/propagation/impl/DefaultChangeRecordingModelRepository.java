@@ -8,8 +8,6 @@ import static tools.vitruv.change.correspondence.model.CorrespondenceModelFactor
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,7 +24,7 @@ import tools.vitruv.change.correspondence.Correspondence;
 import tools.vitruv.change.correspondence.model.PersistableCorrespondenceModel;
 import tools.vitruv.change.correspondence.view.CorrespondenceModelViewFactory;
 import tools.vitruv.change.correspondence.view.EditableCorrespondenceModelView;
-import tools.vitruv.change.propagation.ModelRepositorySnapshot;
+import tools.vitruv.change.propagation.ModelSnapshot;
 import tools.vitruv.change.propagation.PersistableChangeRecordingModelRepository;
 import tools.vitruv.change.propagation.TransactionalChangeWithPreviousState;
 
@@ -190,8 +188,8 @@ public class DefaultChangeRecordingModelRepository
   }
 
   @Override
-  public ModelRepositorySnapshot createSnapshot() {
-    return DefaultModelRepositorySnapshot.copyOf(modelsResourceSet, this::getMetadataModelURI);
+  public ModelSnapshot createSnapshot() {
+    return DefaultModelSnapshot.copyOf(modelsResourceSet, this::getMetadataModelURI);
   }
 
   @Override
@@ -199,7 +197,7 @@ public class DefaultChangeRecordingModelRepository
     List<TransactionalChangeWithPreviousState> result = new ArrayList<>();
 
     for (TransactionalChange<Uuid> transactionalChange : change.getTransactionalChangeSequence()) {
-      ModelRepositorySnapshot previousState = createSnapshot();
+      ModelSnapshot previousState = createSnapshot();
 
       try {
         var resolvedTransactionalChange = (TransactionalChange<EObject>) changeResolver.resolveAndApply(transactionalChange);

@@ -49,7 +49,7 @@ public class ChangePropagator {
       return result;
     }
 
-    private List<PropagatedChange> propagateSingleChange(final TransactionalChange<EObject> change, final ModelRepositorySnapshot previousState) {
+    private List<PropagatedChange> propagateSingleChange(final TransactionalChange<EObject> change, final ModelSnapshot previousState) {
       try {
         Preconditions.checkState(!change.getAffectedEObjects().isEmpty(),
           "There are no objects affected by this change:%s%s", System.lineSeparator(), change);
@@ -124,8 +124,8 @@ public class ChangePropagator {
           .collect(Collectors.toList()));
     }
 
-    private Iterable<TransactionalChangeWithPreviousState> propagateChangeForChangePropagationSpecification(final TransactionalChange<EObject> change, final ModelRepositorySnapshot previousState, final ChangePropagationSpecification propagationSpecification) {
-      try (ModelRepositorySnapshot currentState = !outer.changePropagationMode.equals(ChangePropagationMode.SINGLE_STEP) ? this.outer.modelRepository.createSnapshot() : null) {
+    private Iterable<TransactionalChangeWithPreviousState> propagateChangeForChangePropagationSpecification(final TransactionalChange<EObject> change, final ModelSnapshot previousState, final ChangePropagationSpecification propagationSpecification) {
+      try (ModelSnapshot currentState = !outer.changePropagationMode.equals(ChangePropagationMode.SINGLE_STEP) ? this.outer.modelRepository.createSnapshot() : null) {
         final Runnable _function = () -> propagationSpecification.propagateChanges(change.getEChanges(), this.outer.modelRepository.getCorrespondenceModel(), this.outer.modelRepository, previousState);
         final Iterable<TransactionalChange<EObject>> transitiveChanges = this.outer.modelRepository.recordChanges(_function);
         StreamSupport.stream(transitiveChanges.spliterator(), false)

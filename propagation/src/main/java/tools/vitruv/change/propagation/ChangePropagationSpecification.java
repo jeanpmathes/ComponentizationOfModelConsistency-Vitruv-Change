@@ -76,7 +76,7 @@ public interface ChangePropagationSpecification extends ChangePropagationObserva
   default void propagateChanges(List<EChange<EObject>> changes,
                                 EditableCorrespondenceModelView<Correspondence> correspondenceModel,
                                 ResourceAccess resourceAccess,
-                                ModelRepositorySnapshot previousState) {
+                                ModelSnapshot previousState) {
       changes.forEach(change -> propagateChange(change, correspondenceModel, resourceAccess));
   }
 

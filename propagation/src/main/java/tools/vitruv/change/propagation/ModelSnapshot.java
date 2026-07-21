@@ -5,8 +5,8 @@ import tools.vitruv.change.utils.ResourceAccess;
 
 import java.util.Optional;
 
-public interface ModelRepositorySnapshot extends ResourceAccess, AutoCloseable {
-    ModelRepositorySnapshot copy();
+public interface ModelSnapshot extends ResourceAccess, AutoCloseable {
+    ModelSnapshot copy();
 
     Optional<EObject> getRepositoryEObject(EObject snapshotEObject);
 
